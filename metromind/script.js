@@ -1,4 +1,13 @@
 // KMRL Management System JavaScript
+// Initialize Lenis
+const lenis = new Lenis({
+    autoRaf: true,
+  });
+  
+  // Listen for the scroll event and log the event data
+  lenis.on('scroll', (e) => {
+    console.log(e);
+  });
 
 // Global variables
 let currentUser = null;
@@ -9,6 +18,7 @@ let schedules = [];
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
     initializeRevealOnScroll();
+    initializeTheme();
 });
 
 function initializeApp() {
@@ -57,6 +67,11 @@ function setupEventListeners() {
     const generateBtn = document.getElementById('generateScheduleBtn');
     if (generateBtn) {
         generateBtn.addEventListener('click', handleGenerateSchedule);
+    }
+
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
     }
 }
 
@@ -625,3 +640,27 @@ window.logout = logout;
 window.resetConstraintsForm = resetConstraintsForm;
 window.editConstraint = editConstraint;
 window.deleteConstraint = deleteConstraint;
+
+// THEME: light/dark with persistence
+function initializeTheme() {
+    const saved = localStorage.getItem('kmrl_theme');
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = saved || (prefersDark ? 'dark' : 'light');
+    applyTheme(theme);
+}
+
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    const next = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    localStorage.setItem('kmrl_theme', next);
+}
+
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    const btn = document.getElementById('themeToggle');
+    if (btn) {
+        btn.innerHTML = theme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        btn.classList.toggle('btn-outline-light', true);
+    }
+}
