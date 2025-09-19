@@ -11,7 +11,6 @@
     <link href="styles.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Login Page -->
     <div id="loginPage" class="login-container">
         <div class="login-card">
             <div class="text-center mb-4">
@@ -32,10 +31,7 @@
             <div id="loginErrorMsg" class="mt-2 text-danger" style="display:none;"></div>
         </div>
     </div>
-
-    <!-- Dashboard Page -->
     <div id="dashboardPage" class="d-none">
-        <!-- Top Navbar -->
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <div class="container-fluid">
                 <a class="navbar-brand" href="#">
@@ -80,14 +76,11 @@
                 </div>
             </div>
         </nav>
-                <!-- Main Content -->
                 <main class="col-md-9 col-lg-10 ">
-                    <!-- Dashboard Content -->
                     <div id="dashboardContent">
                         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                             <h1 class="h2">Dashboard</h1>
                         </div>
-                        <!-- Quick Stats Cards -->
                         <div class="row mb-4">
                             <div class="col-xl-3 col-md-6 mb-4 reveal">
                                 <div class="card border-left-primary shadow h-100 py-2">
@@ -158,7 +151,6 @@
                             </div>
                         </div>
 
-                        <!-- Tabs -->
                         <ul class="nav nav-tabs" id="dashboardTabs" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" id="table-tab" data-bs-toggle="tab" data-bs-target="#table" type="button" role="tab">
@@ -178,7 +170,6 @@
                         </ul>
 
                         <div class="tab-content" id="dashboardTabContent">
-                            <!-- Table Tab -->
                             <div class="tab-pane fade show active" id="table" role="tabpanel">
                                 <div class="card mt-3">
                                     <div class="card-header">
@@ -229,7 +220,6 @@
                                 </div>
                             </div>
 
-                            <!-- Calendar Tab -->
                             <div class="tab-pane fade" id="calendar" role="tabpanel">
                                 <div class="card mt-3">
                                     <div class="card-header">
@@ -237,7 +227,7 @@
                                     </div>
                                     <div class="card-body">
                                         <div id="calendar-widget" class="calendar-container">
-                                            <!-- Calendar will be rendered here -->
+                                     
                                             <div class="text-center p-5">
                                                 <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
                                                 <h5 class="text-muted">Calendar View</h5>
@@ -248,7 +238,6 @@
                                 </div>
                             </div>
 
-                            <!-- Charts Tab -->
                             <div class="tab-pane fade" id="charts" role="tabpanel">
                                 <div class="row mt-3">
                                     <div class="col-lg-6">
@@ -274,24 +263,15 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Dashboard Calendar -->
-                        <div id="dashboardCalendar" class="calendar-container mb-4"></div>
                     </div>
 
-                    <!-- Constraints Content -->
                     <div id="constraintsContent" class="d-none">
     <h3 class="mb-4">Constraints Management</h3>
     <form id="constraintsForm">
         <div class="mb-3">
             <label for="trainId" class="form-label">Train ID</label>
             <input type="Text" placeholder="Ex-25" id="trainId" class="form-control" required>
-            <!-- <select id="trainId" class="form-select" required>
-                <option value="">Select Train</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="25">25</option>
-            </select> -->
+           
         </div>
         <div class="mb-3">
             <label for="fitnessDate" class="form-label">Fitness Certificate Date</label>
@@ -338,7 +318,6 @@
     </div>
                     </div>
 
-                    <!-- Schedules Content -->
                     <div id="schedulesContent" class="d-none">
     <h3>Schedules</h3>
     <form id="scheduleForm" class="mb-3">
@@ -359,13 +338,10 @@
     <div id="scheduleApiResult"></div>
 </div>
 
-                    <!-- Reports Content -->
                     <div id="reportsContent" class="d-none">
                         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                             <h1 class="h2">Reports & Analytics</h1>
                         </div>
-
-                        <!-- Efficiency Metrics Cards -->
                         <div class="row mb-4">
                             <div class="col-lg-3 col-md-6 mb-4">
                                 <div class="card bg-primary text-white">
@@ -431,8 +407,6 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Charts Section -->
                         <div class="row">
                             <div class="col-lg-8">
                                 <div class="card">
@@ -455,8 +429,6 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Detailed Reports Table -->
                         <div class="card mt-4">
                             <div class="card-header">
                                 <h5 class="mb-0">Detailed Performance Report</h5>

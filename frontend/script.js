@@ -1,21 +1,12 @@
-// KMRL Management System JavaScript
-// Initialize Lenis
+
 const lenis = new Lenis({
     autoRaf: true,
   });
-  
-  // Listen for the scroll event and log the event data
-  lenis.on('scroll', (e) => {
-    // This can be noisy in the console, you can comment it out if not needed for debugging
-    // console.log(e);
-  });
 
-// Global variables
 let currentUser = null;
-let constraints = []; // Already declared
+let constraints = []; 
 let schedules = [];
 
-// Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
     initializeRevealOnScroll();
@@ -87,12 +78,11 @@ function logout() {
     document.getElementById('loginPage').classList.remove('d-none');
 }
 
-// --- Content Visibility Functions ---
 function showDashboard() {
     setActiveNav('navDashboard');
     showContent('dashboardContent');
     refreshDashboardData();
-    initializeDashboardCalendar(); // <-- Add this line
+    initializeDashboardCalendar(); 
 }
 
 function showConstraints() {
@@ -103,7 +93,6 @@ function showConstraints() {
 function showSchedules() {
     setActiveNav('navSchedules');
     showContent('schedulesContent');
-    // Clear previous results when navigating to the page
     const resultContainer = document.getElementById('scheduleApiResult');
     if(resultContainer) {
         resultContainer.innerHTML = "";
@@ -117,12 +106,10 @@ function showReports() {
 }
 
 function showContent(contentId) {
-    // Hide all main content sections
     ['dashboardContent', 'constraintsContent', 'schedulesContent', 'reportsContent'].forEach(id => {
         document.getElementById(id)?.classList.add('d-none');
     });
     
-    // Show the selected one
     const selectedContent = document.getElementById(contentId);
     if (selectedContent) {
         selectedContent.classList.remove('d-none');
@@ -136,7 +123,6 @@ function setActiveNav(navId) {
     });
     document.getElementById(navId)?.classList.add('active');
 }
-// ------------------------------------
 
 function initializeDatePickers() {
     if (typeof flatpickr !== 'undefined') {
@@ -149,7 +135,7 @@ function initializeDatePickers() {
 function handleConstraintsSubmit(e) {
     e.preventDefault();
     const formData = {
-        id: Date.now(), // Unique id
+        id: Date.now(), 
         trainId: document.getElementById('trainId').value,
         fitnessDate: document.getElementById('fitnessDate').value,
         jobCardStatus: document.getElementById('jobCardStatus').value,
@@ -219,7 +205,6 @@ window.editConstraint = function(id) {
     document.getElementById('mileage').value = item.mileage;
     document.getElementById('cleaningSlot').value = item.cleaningSlot;
     document.getElementById('stablingPosition').value = item.stablingPosition;
-    // Remove old entry so submit will update
     constraints = constraints.filter(c => c.id !== id);
     renderConstraintsList();
 };
@@ -240,7 +225,6 @@ function handleScheduleRequest(e) {
         return;
     }
 
-    // Show loader
     resultContainer.innerHTML = `
         <div class="d-flex justify-content-center align-items-center" style="height: 120px;">
             <div class="spinner-border text-primary" role="status">
@@ -251,12 +235,10 @@ function handleScheduleRequest(e) {
     `;
 
     setTimeout(() => {
-        // Calculate date difference
         const start = new Date(startDate);
         const end = new Date(endDate);
         const diffDays = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1);
 
-        // Train names and routes
         const trainNames = Array.from({length: 24}, (_, i) => `KM-${(i+1).toString().padStart(3, '0')}`);
         const trainRoutes = [
             'Aluva - Petta',
@@ -277,11 +259,11 @@ function handleScheduleRequest(e) {
             for (let t = 0; t < 24; t++) {
                 const trainId = trainNames[t];
                 const route = trainRoutes[Math.floor(Math.random() * trainRoutes.length)];
-                // Departure between 6:00 and 20:00
+               
                 const depHour = 6 + Math.floor(Math.random() * 14);
                 const depMinute = Math.floor(Math.random() * 60);
                 const departureTime = `${depHour.toString().padStart(2, '0')}:${depMinute.toString().padStart(2, '0')}`;
-                // Arrival 30-90 min after departure
+              
                 const arrOffset = 30 + Math.floor(Math.random() * 61);
                 const arrDate = new Date(date);
                 arrDate.setHours(depHour, depMinute + arrOffset);
@@ -301,7 +283,6 @@ function handleScheduleRequest(e) {
             }
         }
 
-        // Show in table
         let html = `
             <div class="table-responsive mt-3">
                 <table class="table table-striped">
@@ -334,7 +315,7 @@ function handleScheduleRequest(e) {
         `;
         resultContainer.innerHTML = html;
         showNotification('Schedules generated successfully!', 'success');
-    }, 2000); // 2 second delay
+    }, 2000); 
 }
 
 function refreshDashboardData() {
@@ -359,12 +340,11 @@ function updateQuickStats() {
 }
 
 function updateDashboardCards() {
-    // Yahan apni values daalein
     const data = {
-        totalTrains: 30,         // Naya data
-        readyForService: 22,     // Naya data
-        standby: 5,              // Naya data
-        maintenance: 3           // Naya data
+        totalTrains: 30,        
+        readyForService: 22,    
+        standby: 5,             
+        maintenance: 3           
     };
 
     const totalTrainsEl = document.getElementById('totalTrainsCount');
@@ -392,17 +372,19 @@ function refreshReportsData() {
     initializeCharts();
 }
 
+let passengerChartInstance = null;
+let performanceChartInstance = null;
+
 function initializeCharts() {
     if (typeof Chart === 'undefined') return;
-    
-    // NOTE: This is a simplified chart initialization. In a real app,
-    // you might want to destroy old charts before creating new ones
-    // to prevent memory leaks if the data is dynamic.
-    
+
     // Passenger Flow Chart
     const passengerCtx = document.getElementById('passengerChart');
     if (passengerCtx) {
-        new Chart(passengerCtx, {
+        if (passengerChartInstance) {
+            passengerChartInstance.destroy();
+        }
+        passengerChartInstance = new Chart(passengerCtx, {
             type: 'line',
             data: {
                 labels: ['6am', '8am', '10am', '12pm', '2pm', '4pm', '6pm', '8pm'],
@@ -417,10 +399,12 @@ function initializeCharts() {
         });
     }
 
-    // Performance Chart
     const performanceCtx = document.getElementById('performanceChart');
     if (performanceCtx) {
-        new Chart(performanceCtx, {
+        if (performanceChartInstance) {
+            performanceChartInstance.destroy();
+        }
+        performanceChartInstance = new Chart(performanceCtx, {
             type: 'doughnut',
             data: {
                 labels: ['On Time', 'Delayed', 'Cancelled'],
@@ -428,8 +412,6 @@ function initializeCharts() {
             }
         });
     }
-
-    // Add other chart initializations (trends, route) here if needed
 }
 
 function animateNumber(element, targetValue) {
@@ -443,7 +425,7 @@ function animateNumber(element, targetValue) {
         const progress = Math.min(elapsed / duration, 1);
         const currentValue = startValue + (targetValue - startValue) * progress;
 
-        if (targetValue % 1 !== 0 || suffix === '%') { // Handle decimals
+        if (targetValue % 1 !== 0 || suffix === '%') { 
             element.textContent = currentValue.toFixed(1) + suffix;
         } else {
             element.textContent = Math.round(currentValue).toLocaleString();
@@ -452,7 +434,6 @@ function animateNumber(element, targetValue) {
         if (progress < 1) {
             requestAnimationFrame(updateNumber);
         } else {
-            // Ensure final value is accurate
             if (targetValue % 1 !== 0 || suffix === '%') {
                  element.textContent = targetValue.toFixed(1) + suffix;
             } else {
@@ -476,7 +457,6 @@ function initializeDashboardCalendar() {
     const calendarEl = document.getElementById('dashboardCalendar');
     if (!calendarEl || typeof FullCalendar === 'undefined') return;
 
-    // Generate random train schedules and maintenance windows for calendar
     const today = new Date();
     let events = [];
     const trainNames = Array.from({length: 24}, (_, i) => `KM-${(i+1).toString().padStart(3, '0')}`);
@@ -489,13 +469,11 @@ function initializeDashboardCalendar() {
         'Petta - Muttom'
     ];
 
-    // Add train schedules for next 7 days
     for (let d = 0; d < 7; d++) {
         const date = new Date(today);
         date.setDate(today.getDate() + d);
         const dateStr = date.toISOString().slice(0, 10);
 
-        // 5 random trains per day
         for (let t = 0; t < 5; t++) {
             const trainId = trainNames[Math.floor(Math.random() * trainNames.length)];
             const route = trainRoutes[Math.floor(Math.random() * trainRoutes.length)];
@@ -515,7 +493,6 @@ function initializeDashboardCalendar() {
             });
         }
 
-        // 1 maintenance window per day
         const maintHour = 12 + Math.floor(Math.random() * 6);
         events.push({
             title: `Maintenance Window`,
@@ -538,16 +515,8 @@ function initializeDashboardCalendar() {
     calendar.render();
 }
 
-// Global access for onclick attributes
 window.showDashboard = showDashboard;
 window.showConstraints = showConstraints;
 window.showSchedules = showSchedules;
 window.showReports = showReports;
 window.logout = logout;
-
-/*  Add in <head> section 
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css" rel="stylesheet">
-*/
-/*  Add before closing </body> tag 
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.js"></script>
-*/
