@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Java Prediction UI</title>
+</head>
+<body>
+  <h2>Health Check</h2>
+  <button onclick="checkHealth()">Check</button>
+  <pre id="health"></pre>
+
+  <h2>Prediction</h2>
+  <input id="features" placeholder="Enter numbers, e.g. 0.2,0.8,1.0">
+  <button onclick="predict()">Predict</button>
+  <pre id="prediction"></pre>
+
+  <h2>Schedule</h2>
+  <input id="taskName" placeholder="Task name">
+  <input id="time" placeholder="YYYY-MM-DD HH:MM:SS">
+  <button onclick="schedule()">Schedule</button>
+  <pre id="schedule"></pre>
+
+  <script>
+    async function checkHealth() {
+      const res = await fetch('/api/health');
+      document.getElementById('health').innerText = JSON.stringify(await res.json(), null, 2);
+    }
+    async function predict() {
+      const features = document.getElementById('features').value.split(',').map(Number);
+      const res = await fetch('/api/predict', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({features})
+      });
+      document.getElementById('prediction').innerText = JSON.stringify(await res.json(), null, 2);
+    }
+    async function schedule() {
+      const taskName = document.getElementById('taskName').value;
+      const time = document.getElementById('time').value;
+      const res = await fetch('/api/schedule', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({taskName, time})
+      });
+      document.getElementById('schedule').innerText = JSON.stringify(await res.json(), null, 2);
+    }
+  </script>
+</body>
+</html>
