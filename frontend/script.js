@@ -325,10 +325,10 @@ function refreshDashboardData() {
 
 function updateQuickStats() {
     const stats = {
-        totalTrains: 24,
-        activeRoutes: 8,
-        dailyPassengers: 0,
-        systemEfficiency: 5
+        totalTrains: 25,
+        activeRoutes: 20,
+        dailyPassengers: 2,
+        systemEfficiency: 2
     };
     
     Object.keys(stats).forEach(key => {
@@ -341,8 +341,8 @@ function updateQuickStats() {
 
 function updateDashboardCards() {
     const data = {
-        totalTrains: 30,        
-        readyForService: 22,    
+        totalTrains: 25,        
+        readyForService: 8,    
         standby: 5,             
         maintenance: 3           
     };

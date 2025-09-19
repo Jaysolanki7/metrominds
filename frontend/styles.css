@@ -1,4 +1,4 @@
-/* KMRL Management System Styles */
+
 :root {
     --kmrl-blue: #0066cc;
     --kmrl-light-blue: #e6f2ff;
@@ -16,7 +16,6 @@ html {
     scroll-behavior: smooth;
 }
 
-/* Login Page Styles */
 .login-container {
     min-height: 100vh;
     display: flex;
@@ -39,9 +38,7 @@ html {
     height: auto;
 }
 
-/* Dashboard Styles */
 .sidebar {
-    /* position: fixed; */
     top: 56px;
     bottom: 0;
     left: 0;
@@ -74,13 +71,11 @@ html {
     text-align: center;
 }
 
-/* Main Content */
 main {
     margin-top: 56px;
     padding-top: 1rem;
 }
 
-/* Card Styles */
 .card {
     border: none;
     border-radius: 10px;
@@ -99,7 +94,6 @@ main {
     border-radius: 10px 10px 0 0 !important;
 }
 
-/* Stats Cards */
 .border-left-primary {
     border-left: 4px solid var(--kmrl-blue) !important;
 }
@@ -132,7 +126,6 @@ main {
     color: #dddfeb !important;
 }
 
-/* Navbar Styles */
 .navbar {
     background-color: var(--kmrl-light-blue) !important;
     border-bottom: 1px solid #e9ecef;
@@ -162,7 +155,6 @@ main {
     border-radius: 6px;
 }
 
-/* Tab Styles */
 .nav-tabs {
     border-bottom: 2px solid #e9ecef;
 }
@@ -187,7 +179,6 @@ main {
     border-bottom: 2px solid var(--kmrl-blue);
 }
 
-/* Table Styles */
 .table {
     border-radius: 8px;
     overflow: hidden;
@@ -212,14 +203,12 @@ main {
     width: 75%;
     margin: auto;
 }
-/* Badge Styles */
 .badge {
     font-size: 0.75rem;
     padding: 0.5rem 0.75rem;
     border-radius: 20px;
 }
 
-/* Form Styles */
 .form-control, .form-select {
     background-color: #ffffff75;
     border: 2px solid #e9ecef;
@@ -239,7 +228,6 @@ main {
     margin-bottom: 0.5rem;
 }
 
-/* Button Styles */
 .btn {
     border-radius: 8px;
     padding: 0.75rem 1.5rem;
@@ -283,7 +271,6 @@ main {
     border-color: #dc3545;
 }
 
-/* Calendar Styles */
 .calendar-container {
     min-height: 400px;
     display: flex;
@@ -291,13 +278,11 @@ main {
     justify-content: center;
 }
 
-/* Chart Container */
 canvas {
     max-width: 100%;
     height: auto;
 }
 
-/* Reports Page Specific Styles */
 .card.bg-primary {
     background: linear-gradient(135deg, var(--kmrl-blue) 0%, var(--kmrl-dark-blue) 100%) !important;
 }
@@ -314,7 +299,6 @@ canvas {
     background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
     .sidebar {
         position: static;
@@ -356,7 +340,6 @@ canvas {
     }
 }
 
-/* Animation Classes */
 .reveal {
     opacity: 0;
     transform: translateY(16px);
@@ -396,7 +379,6 @@ canvas {
     }
 }
 
-/* Loading States */
 .loading {
     opacity: 0.6;
     pointer-events: none;
@@ -407,7 +389,6 @@ canvas {
     height: 1rem;
 }
 
-/* Custom Scrollbar */
 ::-webkit-scrollbar {
     width: 8px;
 }
@@ -426,7 +407,6 @@ canvas {
     background: var(--kmrl-dark-blue);
 }
 
-/* Print Styles */
 @media print {
     .sidebar,
     .navbar,
