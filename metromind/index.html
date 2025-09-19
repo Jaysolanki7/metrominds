@@ -7,6 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="styles.css" rel="stylesheet">
 </head>
 <body>
@@ -14,38 +15,58 @@
     <div id="loginPage" class="login-container">
         <div class="login-card">
             <div class="text-center mb-4">
-                <img src="https://via.placeholder.com/150x80/0066cc/ffffff?text=KMRL" alt="KMRL Logo" class="mb-3">
-                <h2 class="text-primary">KMRL Management System</h2>
+                <h2 class="bg-gradient-to-l from-yellow-500 via-blue-500 to-indigo-500 text-transparent bg-clip-text">KMRL Management System</h2>
                 <p class="text-muted">Admin Login</p>
             </div>
             <form id="loginForm">
                 <div class="mb-3">
                     <label for="username" class="form-label">Username</label>
-                    <input type="text" class="form-control" id="username" required>
+                    <input type="text" id="username" class="form-control" required>
                 </div>
                 <div class="mb-3">
                     <label for="password" class="form-label">Password</label>
-                    <input type="password" class="form-control" id="password" required>
+                    <input type="password" id="password" class="form-control" required>
                 </div>
                 <button type="submit" class="btn btn-primary w-100">Login</button>
             </form>
+            <div id="loginErrorMsg" class="mt-2 text-danger" style="display:none;"></div>
         </div>
     </div>
 
     <!-- Dashboard Page -->
     <div id="dashboardPage" class="d-none">
         <!-- Top Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <div class="container-fluid">
                 <a class="navbar-brand" href="#">
-                    <img src="https://via.placeholder.com/40x25/ffffff/0066cc?text=KMRL" alt="KMRL" class="me-2">
                     KMRL Management System
                 </a>
-                <div class="d-flex align-items-center ms-auto gap-2">
-                    <button id="themeToggle" class="btn btn-sm btn-outline-light" type="button" title="Toggle theme" aria-label="Toggle theme">
-                        <i class="fas fa-moon"></i>
-                    </button>
-                </div>
+                <ul class="nav" id="mainNavbar">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="navDashboard" href="#" onclick="showDashboard()">
+                            <i class="fas fa-tachometer-alt me-2"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="navConstraints" href="#" onclick="showConstraints()">
+                            <i class="fas fa-cogs me-2"></i>
+                            Constraints
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="navSchedules" href="#" onclick="showSchedules()">
+                            <i class="fas fa-calendar-alt me-2"></i>
+                            Schedules
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="navReports" href="#" onclick="showReports()">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Reports
+                        </a>
+                    </li>
+                </ul>
                 <div class="navbar-nav ms-2">
                     <div class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
@@ -59,49 +80,13 @@
                 </div>
             </div>
         </nav>
-
-        <div class="container-fluid">
-            <div class="row">
-                <!-- Left Sidebar -->
-                <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
-                    <div class="position-sticky pt-3">
-                        <ul class="nav flex-column">
-                            <li class="nav-item">
-                                <a class="nav-link active" href="#" onclick="showDashboard()">
-                                    <i class="fas fa-tachometer-alt me-2"></i>
-                                    Dashboard
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#" onclick="showConstraints()">
-                                    <i class="fas fa-cogs me-2"></i>
-                                    Constraints
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#" onclick="showSchedules()">
-                                    <i class="fas fa-calendar-alt me-2"></i>
-                                    Schedules
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#" onclick="showReports()">
-                                    <i class="fas fa-chart-bar me-2"></i>
-                                    Reports
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </nav>
-
                 <!-- Main Content -->
-                <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <main class="col-md-9 col-lg-10 ">
                     <!-- Dashboard Content -->
                     <div id="dashboardContent">
                         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                             <h1 class="h2">Dashboard</h1>
                         </div>
-
                         <!-- Quick Stats Cards -->
                         <div class="row mb-4">
                             <div class="col-xl-3 col-md-6 mb-4 reveal">
@@ -114,7 +99,7 @@
                                                 <div class="h5 mb-0 font-weight-bold text-gray-800"><span data-stat="totalTrains">24</span></div>
                                             </div>
                                             <div class="col-auto">
-                                                <i class="fas fa-train fa-2x text-gray-300"></i>
+                                                <i class="fas fa-subway fa-2x text-gray-300"></i>
                                             </div>
                                         </div>
                                     </div>
@@ -127,11 +112,11 @@
                                         <div class="row no-gutters align-items-center">
                                             <div class="col mr-2">
                                                 <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                                    Active Routes</div>
+                                                    Ready for service</div>
                                                 <div class="h5 mb-0 font-weight-bold text-gray-800"><span data-stat="activeRoutes">8</span></div>
                                             </div>
                                             <div class="col-auto">
-                                                <i class="fas fa-route fa-2x text-gray-300"></i>
+                                                <i class="fas fa-circle-check fa-2x text-gray-300"></i>
                                             </div>
                                         </div>
                                     </div>
@@ -144,11 +129,11 @@
                                         <div class="row no-gutters align-items-center">
                                             <div class="col mr-2">
                                                 <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                                    Daily Passengers</div>
-                                                <div class="h5 mb-0 font-weight-bold text-gray-800"><span data-stat="dailyPassengers">45230</span></div>
+                                                   Standby</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800"><span data-stat="dailyPassengers">20</span></div>
                                             </div>
                                             <div class="col-auto">
-                                                <i class="fas fa-users fa-2x text-gray-300"></i>
+                                                <i class="fas fa-clock fa-2x text-gray-300"></i>
                                             </div>
                                         </div>
                                     </div>
@@ -161,11 +146,11 @@
                                         <div class="row no-gutters align-items-center">
                                             <div class="col mr-2">
                                                 <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                    System Efficiency</div>
-                                                <div class="h5 mb-0 font-weight-bold text-gray-800"><span data-stat="systemEfficiency" data-suffix="%">94.2</span></div>
+                                                    Maintenance</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800"><span data-stat="systemEfficiency">/span></div>
                                             </div>
                                             <div class="col-auto">
-                                                <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                                                <i class="fas fa-tools fa-2x text-gray-300"></i>
                                             </div>
                                         </div>
                                     </div>
@@ -293,194 +278,83 @@
 
                     <!-- Constraints Content -->
                     <div id="constraintsContent" class="d-none">
-                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                            <h1 class="h2">Constraints Management</h1>
-                        </div>
-
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="mb-0">Add New Constraint</h5>
-                            </div>
-                            <div class="card-body">
-                                <form id="constraintsForm">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="constraintType" class="form-label">Constraint Type</label>
-                                                <select class="form-select" id="constraintType" required>
-                                                    <option value="">Select Type</option>
-                                                    <option value="maintenance">Maintenance Window</option>
-                                                    <option value="weather">Weather Condition</option>
-                                                    <option value="traffic">Traffic Congestion</option>
-                                                    <option value="emergency">Emergency</option>
-                                                    <option value="other">Other</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="route" class="form-label">Affected Route</label>
-                                                <select class="form-select" id="route" required>
-                                                    <option value="">Select Route</option>
-                                                    <option value="aluva-petta">Aluva - Petta</option>
-                                                    <option value="petta-aluva">Petta - Aluva</option>
-                                                    <option value="all">All Routes</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="startDate" class="form-label">Start Date & Time</label>
-                                                <input type="text" class="form-control" id="startDate" placeholder="Select date and time" required>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="endDate" class="form-label">End Date & Time</label>
-                                                <input type="text" class="form-control" id="endDate" placeholder="Select date and time" required>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="severity" class="form-label">Severity Level</label>
-                                        <select class="form-select" id="severity" required>
-                                            <option value="">Select Severity</option>
-                                            <option value="low">Low</option>
-                                            <option value="medium">Medium</option>
-                                            <option value="high">High</option>
-                                            <option value="critical">Critical</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="description" class="form-label">Description</label>
-                                        <textarea class="form-control" id="description" rows="3" placeholder="Enter constraint description"></textarea>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="notifyPassengers">
-                                            <label class="form-check-label" for="notifyPassengers">
-                                                Notify passengers about this constraint
-                                            </label>
-                                        </div>
-                                    </div>
-
-                                    <button type="submit" class="btn btn-primary">Add Constraint</button>
-                                    <button type="button" class="btn btn-secondary ms-2" onclick="resetConstraintsForm()">Reset</button>
-                                </form>
-                            </div>
-                        </div>
-
-                        <!-- Existing Constraints Table -->
-                        <div class="card mt-4">
-                            <div class="card-header">
-                                <h5 class="mb-0">Existing Constraints</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>Type</th>
-                                                <th>Route</th>
-                                                <th>Start Time</th>
-                                                <th>End Time</th>
-                                                <th>Severity</th>
-                                                <th>Status</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="constraintsTableBody">
-                                            <tr>
-                                                <td>Maintenance</td>
-                                                <td>Aluva - Petta</td>
-                                                <td>2024-01-15 02:00</td>
-                                                <td>2024-01-15 04:00</td>
-                                                <td><span class="badge bg-warning">Medium</span></td>
-                                                <td><span class="badge bg-success">Active</span></td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-outline-primary">Edit</button>
-                                                    <button class="btn btn-sm btn-outline-danger">Delete</button>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
+    <h3 class="mb-4">Constraints Management</h3>
+    <form id="constraintsForm">
+        <div class="mb-3">
+            <label for="trainId" class="form-label">Train ID</label>
+            <input type="Text" placeholder="Ex-25" id="trainId" class="form-control" required>
+            <!-- <select id="trainId" class="form-select" required>
+                <option value="">Select Train</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="25">25</option>
+            </select> -->
+        </div>
+        <div class="mb-3">
+            <label for="fitnessDate" class="form-label">Fitness Certificate Date</label>
+            <input type="date" id="fitnessDate" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="jobCardStatus" class="form-label">Job-card Status</label>
+            <select id="jobCardStatus" class="form-select" required>
+                <option value="Open">Open</option>
+                <option value="Closed">Closed</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="brandingPriority" class="form-label">Branding Priority</label>
+            <select id="brandingPriority" class="form-select" required>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="mileage" class="form-label">Mileage</label>
+            <input type="number" id="mileage" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="cleaningSlot" class="form-label">Cleaning Slot</label>
+            <select id="cleaningSlot" class="form-select" required>
+                <option value="Available">Available</option>
+                <option value="Unavailable">Unavailable</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="stablingPosition" class="form-label">Stabling Position</label>
+            <select id="stablingPosition" class="form-select" required>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+            </select>
+        </div>
+        <button type="submit" id="submitbutton" class="btn btn-primary">Submit</button>
+    </form>
+    <div id="formRequestMsg" class="mt-3 text-success" style="display:none;">
+        Request for form submitted!
+    </div>
                     </div>
 
                     <!-- Schedules Content -->
                     <div id="schedulesContent" class="d-none">
-                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                            <h1 class="h2">Schedules</h1>
-                        </div>
-
-                        <div class="row mt-3">
-                            <div class="col-lg-6">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5 class="mb-0">Upcoming Departures</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="table-responsive">
-                                            <table class="table table-striped mb-0">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Train</th>
-                                                        <th>Route</th>
-                                                        <th>Departs</th>
-                                                        <th>Status</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="schedulesTableBody">
-                                                    <tr>
-                                                        <td>KM010</td>
-                                                        <td>Aluva - Petta</td>
-                                                        <td>07:30</td>
-                                                        <td><span class="badge bg-success">On Time</span></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>KM011</td>
-                                                        <td>Petta - Aluva</td>
-                                                        <td>07:45</td>
-                                                        <td><span class="badge bg-warning">Boarding</span></td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5 class="mb-0">Planner</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="row g-3">
-                                            <div class="col-md-6">
-                                                <label for="planStart" class="form-label">Start</label>
-                                                <input id="planStart" type="text" class="form-control" placeholder="Select date & time">
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label for="planEnd" class="form-label">End</label>
-                                                <input id="planEnd" type="text" class="form-control" placeholder="Select date & time">
-                                            </div>
-                                        </div>
-                                        <div class="mt-3">
-                                            <button id="generateScheduleBtn" class="btn btn-primary" type="button">Generate Schedule</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <h3>Schedules</h3>
+    <form id="scheduleForm" class="mb-3">
+        <div class="row">
+            <div class="col">
+                <label for="startDate" class="form-label">Start Date</label>
+                <input type="date" id="startDate" class="form-control" required>
+            </div>
+            <div class="col">
+                <label for="endDate" class="form-label">End Date</label>
+                <input type="date" id="endDate" class="form-control" required>
+            </div>
+            <div class="col d-flex align-items-end">
+                <button type="submit" class="btn btn-primary">Schedule Request</button>
+            </div>
+        </div>
+    </form>
+    <div id="scheduleApiResult"></div>
+</div>
 
                     <!-- Reports Content -->
                     <div id="reportsContent" class="d-none">

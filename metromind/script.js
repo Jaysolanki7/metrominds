@@ -6,7 +6,8 @@ const lenis = new Lenis({
   
   // Listen for the scroll event and log the event data
   lenis.on('scroll', (e) => {
-    console.log(e);
+    // This can be noisy in the console, you can comment it out if not needed for debugging
+    // console.log(e);
   });
 
 // Global variables
@@ -22,20 +23,12 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeApp() {
-    // Initialize date/time pickers
     initializeDatePickers();
-    
-    // Initialize charts
     initializeCharts();
-    
-    // Set up event listeners
     setupEventListeners();
-    
-    // Check if user is already logged in
     checkLoginStatus();
 }
 
-// Smooth reveal on scroll using IntersectionObserver
 function initializeRevealOnScroll() {
     const revealElements = document.querySelectorAll('.reveal');
     if (!('IntersectionObserver' in window) || revealElements.length === 0) return;
@@ -52,42 +45,28 @@ function initializeRevealOnScroll() {
     revealElements.forEach(el => observer.observe(el));
 }
 
-// Login functionality
 function setupEventListeners() {
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', handleLogin);
-    }
-    
-    const constraintsForm = document.getElementById('constraintsForm');
-    if (constraintsForm) {
-        constraintsForm.addEventListener('submit', handleConstraintsSubmit);
-    }
-
-    const generateBtn = document.getElementById('generateScheduleBtn');
-    if (generateBtn) {
-        generateBtn.addEventListener('click', handleGenerateSchedule);
-    }
-
-    const themeToggle = document.getElementById('themeToggle');
-    if (themeToggle) {
-        themeToggle.addEventListener('click', toggleTheme);
-    }
+    document.getElementById('loginForm')?.addEventListener('submit', handleLogin);
+    document.getElementById('constraintsForm')?.addEventListener('submit', handleConstraintsSubmit);
+    document.getElementById('scheduleForm')?.addEventListener('submit', handleScheduleRequest); // Renamed for clarity
+    document.getElementById('themeToggle')?.addEventListener('click', toggleTheme);
 }
 
 function handleLogin(e) {
     e.preventDefault();
-    
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
     
-    // Simple authentication (in real app, this would be server-side)
-    if (username === 'admin' && password === 'admin123') {
+    if (username === 'admin' && password === 'admin') {
         currentUser = { username: username, role: 'admin' };
         localStorage.setItem('kmrl_user', JSON.stringify(currentUser));
+        document.getElementById('loginPage').classList.add('d-none');
+        document.getElementById('dashboardPage').classList.remove('d-none');
         showDashboard();
     } else {
-        alert('Invalid credentials. Use admin/admin123 for demo.');
+        const errorMsg = document.getElementById('loginErrorMsg');
+        errorMsg.textContent = 'Invalid credentials. Use admin/admin for demo.';
+        errorMsg.style.display = 'block';
     }
 }
 
@@ -95,6 +74,8 @@ function checkLoginStatus() {
     const savedUser = localStorage.getItem('kmrl_user');
     if (savedUser) {
         currentUser = JSON.parse(savedUser);
+        document.getElementById('loginPage').classList.add('d-none');
+        document.getElementById('dashboardPage').classList.remove('d-none');
         showDashboard();
     }
 }
@@ -102,56 +83,46 @@ function checkLoginStatus() {
 function logout() {
     currentUser = null;
     localStorage.removeItem('kmrl_user');
-    showLogin();
-}
-
-function showLogin() {
-    document.getElementById('loginPage').classList.remove('d-none');
     document.getElementById('dashboardPage').classList.add('d-none');
+    document.getElementById('loginPage').classList.remove('d-none');
 }
 
+// --- Content Visibility Functions ---
 function showDashboard() {
-    document.getElementById('loginPage').classList.add('d-none');
-    document.getElementById('dashboardPage').classList.remove('d-none');
-    
-    // Show dashboard content and hide others
+    setActiveNav('navDashboard');
     showContent('dashboardContent');
-    
-    // Update active nav item
-    updateActiveNavItem('dashboard');
-    
-    // Refresh dashboard data
     refreshDashboardData();
 }
 
-// Navigation functions
 function showConstraints() {
+    setActiveNav('navConstraints');
     showContent('constraintsContent');
-    updateActiveNavItem('constraints');
 }
 
+// CORRECTED FUNCTION
 function showSchedules() {
+    setActiveNav('navSchedules');
     showContent('schedulesContent');
-    updateActiveNavItem('schedules');
+    // Clear previous results when navigating to the page
+    const resultContainer = document.getElementById('scheduleApiResult');
+    if(resultContainer) {
+        resultContainer.innerHTML = "";
+    }
 }
 
 function showReports() {
+    setActiveNav('navReports');
     showContent('reportsContent');
-    updateActiveNavItem('reports');
     refreshReportsData();
 }
 
 function showContent(contentId) {
-    // Hide all content sections
-    const contentSections = ['dashboardContent', 'constraintsContent', 'schedulesContent', 'reportsContent'];
-    contentSections.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-            element.classList.add('d-none');
-        }
+    // Hide all main content sections
+    ['dashboardContent', 'constraintsContent', 'schedulesContent', 'reportsContent'].forEach(id => {
+        document.getElementById(id)?.classList.add('d-none');
     });
     
-    // Show selected content
+    // Show the selected one
     const selectedContent = document.getElementById(contentId);
     if (selectedContent) {
         selectedContent.classList.remove('d-none');
@@ -159,306 +130,165 @@ function showContent(contentId) {
     }
 }
 
-function updateActiveNavItem(activeItem) {
-    // Remove active class from all nav items
-    const navItems = document.querySelectorAll('.sidebar .nav-link');
-    navItems.forEach(item => {
-        item.classList.remove('active');
+function setActiveNav(navId) {
+    document.querySelectorAll('#mainNavbar .nav-link').forEach(link => {
+        link.classList.remove('active');
     });
-    
-    // Add active class to selected item
-    const activeNavItem = document.querySelector(`[onclick="show${activeItem.charAt(0).toUpperCase() + activeItem.slice(1)}()"]`);
-    if (activeNavItem) {
-        activeNavItem.classList.add('active');
-    }
+    document.getElementById(navId)?.classList.add('active');
 }
+// ------------------------------------
 
-// Date/Time picker initialization
 function initializeDatePickers() {
-    // Initialize Flatpickr for date/time inputs
     if (typeof flatpickr !== 'undefined') {
-        flatpickr("#startDate", {
-            enableTime: true,
-            dateFormat: "Y-m-d H:i",
-            time_24hr: true,
-            minDate: "today"
-        });
-        
-        flatpickr("#endDate", {
-            enableTime: true,
-            dateFormat: "Y-m-d H:i",
-            time_24hr: true,
-            minDate: "today"
-        });
-
-        // Schedules planner date pickers (if present)
-        flatpickr("#planStart", {
-            enableTime: true,
-            dateFormat: "Y-m-d H:i",
-            time_24hr: true,
-            minDate: "today"
-        });
-
-        flatpickr("#planEnd", {
-            enableTime: true,
-            dateFormat: "Y-m-d H:i",
-            time_24hr: true,
-            minDate: "today"
-        });
+        flatpickr("#fitnessDate", { dateFormat: "Y-m-d" });
+        flatpickr("#startDate", { dateFormat: "Y-m-d" });
+        flatpickr("#endDate", { dateFormat: "Y-m-d" });
     }
 }
 
-// Constraints management
 function handleConstraintsSubmit(e) {
     e.preventDefault();
-    
     const formData = {
-        type: document.getElementById('constraintType').value,
-        route: document.getElementById('route').value,
-        startDate: document.getElementById('startDate').value,
-        endDate: document.getElementById('endDate').value,
-        severity: document.getElementById('severity').value,
-        description: document.getElementById('description').value,
-        notifyPassengers: document.getElementById('notifyPassengers').checked,
-        id: Date.now(), // Simple ID generation
-        status: 'Active',
-        createdAt: new Date().toISOString()
+        trainId: document.getElementById('trainId').value,
+        fitnessDate: document.getElementById('fitnessDate').value,
+        jobCardStatus: document.getElementById('jobCardStatus').value,
+        brandingPriority: document.getElementById('brandingPriority').value,
+        mileage: document.getElementById('mileage').value,
+        cleaningSlot: document.getElementById('cleaningSlot').value,
+        stablingPosition: document.getElementById('stablingPosition').value
     };
-    
-    // Add to constraints array
-    constraints.push(formData);
-    
-    // Update constraints table
-    updateConstraintsTable();
-    
-    // Show success message
-    showNotification('Constraint added successfully!', 'success');
-    
-    // Reset form
-    resetConstraintsForm();
-}
-
-function updateConstraintsTable() {
-    const tbody = document.getElementById('constraintsTableBody');
-    if (!tbody) return;
-    
-    tbody.innerHTML = '';
-    
-    constraints.forEach(constraint => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${constraint.type}</td>
-            <td>${constraint.route}</td>
-            <td>${constraint.startDate}</td>
-            <td>${constraint.endDate}</td>
-            <td><span class="badge bg-${getSeverityColor(constraint.severity)}">${constraint.severity}</span></td>
-            <td><span class="badge bg-success">${constraint.status}</span></td>
-            <td>
-                <button class="btn btn-sm btn-outline-primary" onclick="editConstraint(${constraint.id})">Edit</button>
-                <button class="btn btn-sm btn-outline-danger" onclick="deleteConstraint(${constraint.id})">Delete</button>
-            </td>
-        `;
-        tbody.appendChild(row);
-    });
-}
-
-function getSeverityColor(severity) {
-    const colors = {
-        'low': 'success',
-        'medium': 'warning',
-        'high': 'danger',
-        'critical': 'dark'
-    };
-    return colors[severity] || 'secondary';
-}
-
-function resetConstraintsForm() {
+    console.log("Constraint form submitted:", formData);
+    showNotification('Constraints submitted successfully!', 'success');
     document.getElementById('constraintsForm').reset();
 }
 
-function editConstraint(id) {
-    const constraint = constraints.find(c => c.id === id);
-    if (constraint) {
-        // Populate form with constraint data
-        document.getElementById('constraintType').value = constraint.type;
-        document.getElementById('route').value = constraint.route;
-        document.getElementById('startDate').value = constraint.startDate;
-        document.getElementById('endDate').value = constraint.endDate;
-        document.getElementById('severity').value = constraint.severity;
-        document.getElementById('description').value = constraint.description;
-        document.getElementById('notifyPassengers').checked = constraint.notifyPassengers;
+function handleScheduleRequest(e) {
+    e.preventDefault();
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+
+    if (!startDate || !endDate) {
+        showNotification("Please select both start and end dates.", "warning");
+        return;
+    }
+
+    // This is where you would make a real API call
+    console.log(`Fetching schedules from ${startDate} to ${endDate}`);
+    showNotification('Fetching schedules...', 'info');
+
+    // MOCKUP: Displaying dummy data after a short delay
+    setTimeout(() => {
+         const dummyData = [
+            { trainName: 'KM-004', trainPath: 'Aluva - Petta', time: '09:00' },
+            { trainName: 'KM-005', trainPath: 'Petta - Aluva', time: '09:15' }
+        ];
         
-        // Scroll to form
-        document.getElementById('constraintsForm').scrollIntoView({ behavior: 'smooth' });
-    }
+        let html = `
+            <div class="table-responsive mt-3">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Train Name</th>
+                            <th>Train Path</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${dummyData.map(item => `
+                            <tr>
+                                <td>${item.trainName}</td>
+                                <td>${item.trainPath}</td>
+                                <td>${item.time}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        document.getElementById('scheduleApiResult').innerHTML = html;
+    }, 1000);
 }
 
-function deleteConstraint(id) {
-    if (confirm('Are you sure you want to delete this constraint?')) {
-        constraints = constraints.filter(c => c.id !== id);
-        updateConstraintsTable();
-        showNotification('Constraint deleted successfully!', 'success');
-    }
-}
-
-// Dashboard data refresh
 function refreshDashboardData() {
-    // Simulate data refresh
     updateQuickStats();
-    updateScheduleTable();
+    updateDashboardCards();
 }
 
 function updateQuickStats() {
-    // In a real application, this would fetch data from an API
     const stats = {
         totalTrains: 24,
         activeRoutes: 8,
-        dailyPassengers: 45230,
-        systemEfficiency: 94.2
+        dailyPassengers: 0,
+        systemEfficiency: 5
     };
     
-    // Update the stats display (if elements exist)
-    const elements = {
-        'totalTrains': stats.totalTrains,
-        'activeRoutes': stats.activeRoutes,
-        'dailyPassengers': stats.dailyPassengers.toLocaleString(),
-        'systemEfficiency': stats.systemEfficiency + '%'
-    };
-    
-    // Animate number changes
-    Object.keys(elements).forEach(key => {
+    Object.keys(stats).forEach(key => {
         const element = document.querySelector(`[data-stat="${key}"]`);
         if (element) {
-            animateNumber(element, elements[key]);
+            animateNumber(element, stats[key]);
         }
     });
 }
 
-function updateScheduleTable() {
-    const tbody = document.getElementById('schedulesTableBody');
-    if (!tbody) return;
+function updateDashboardCards() {
+    // Yahan apni values daalein
+    const data = {
+        totalTrains: 30,         // Naya data
+        readyForService: 22,     // Naya data
+        standby: 5,              // Naya data
+        maintenance: 3           // Naya data
+    };
 
-    tbody.innerHTML = '';
+    const totalTrainsEl = document.getElementById('totalTrainsCount');
+    if (totalTrainsEl) {
+        animateNumber(totalTrainsEl, data.totalTrains);
+    }
 
-    schedules.forEach(item => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${item.trainId}</td>
-            <td>${item.route}</td>
-            <td>${item.time}</td>
-            <td><span class="badge bg-${item.statusColor}">${item.status}</span></td>
-        `;
-        tbody.appendChild(tr);
-    });
+    const readyForServiceEl = document.getElementById('readyForServiceCount');
+    if (readyForServiceEl) {
+        animateNumber(readyForServiceEl, data.readyForService);
+    }
+
+    const standbyEl = document.getElementById('standbyCount');
+    if (standbyEl) {
+        animateNumber(standbyEl, data.standby);
+    }
+
+    const maintenanceEl = document.getElementById('maintenanceCount');
+    if (maintenanceEl) {
+        animateNumber(maintenanceEl, data.maintenance);
+    }
 }
 
-// Generate schedules between selected start and end times at 15-min intervals
-function handleGenerateSchedule() {
-    const startInput = document.getElementById('planStart');
-    const endInput = document.getElementById('planEnd');
-    
-    const startVal = startInput ? startInput.value : '';
-    const endVal = endInput ? endInput.value : '';
-
-    if (!startVal || !endVal) {
-        showNotification('Please select Start and End date/time.', 'warning');
-        return;
-    }
-
-    const start = new Date(startVal.replace(' ', 'T'));
-    const end = new Date(endVal.replace(' ', 'T'));
-
-    if (isNaN(start) || isNaN(end)) {
-        showNotification('Invalid date/time format.', 'danger');
-        return;
-    }
-
-    if (end <= start) {
-        showNotification('End must be after Start.', 'danger');
-        return;
-    }
-
-    const intervalMinutes = 15;
-    const routes = ['Aluva - Petta', 'Petta - Aluva'];
-    const statusOptions = [
-        { label: 'On Time', color: 'success' },
-        { label: 'Boarding', color: 'warning' },
-        { label: 'Delayed', color: 'danger' }
-    ];
-
-    const generated = [];
-    let current = new Date(start.getTime());
-    let trainCounter = 100;
-
-    while (current <= end) {
-        const route = routes[generated.length % routes.length];
-        const status = statusOptions[generated.length % statusOptions.length];
-        const timeStr = current.toTimeString().slice(0,5);
-
-        generated.push({
-            trainId: `KM${trainCounter++}`,
-            route: route,
-            time: timeStr,
-            status: status.label,
-            statusColor: status.color
-        });
-
-        current = new Date(current.getTime() + intervalMinutes * 60000);
-    }
-
-    schedules = generated;
-    updateScheduleTable();
-    showNotification('Schedule generated successfully!', 'success');
-}
-
-// Reports data refresh
 function refreshReportsData() {
-    // Initialize or refresh charts
     initializeCharts();
 }
 
-// Chart initialization
 function initializeCharts() {
+    if (typeof Chart === 'undefined') return;
+    
+    // NOTE: This is a simplified chart initialization. In a real app,
+    // you might want to destroy old charts before creating new ones
+    // to prevent memory leaks if the data is dynamic.
+    
     // Passenger Flow Chart
     const passengerCtx = document.getElementById('passengerChart');
     if (passengerCtx) {
         new Chart(passengerCtx, {
             type: 'line',
             data: {
-                labels: ['6:00', '7:00', '8:00', '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'],
+                labels: ['6am', '8am', '10am', '12pm', '2pm', '4pm', '6pm', '8pm'],
                 datasets: [{
                     label: 'Passenger Flow',
-                    data: [1200, 2500, 4200, 3800, 2200, 1800, 2100, 2400, 2600, 2200, 1800, 3200, 4500, 4200, 2800],
+                    data: [1200, 4200, 2200, 2100, 2600, 3200, 4500, 2800],
                     borderColor: '#0066cc',
                     backgroundColor: 'rgba(0, 102, 204, 0.1)',
-                    tension: 0.4,
                     fill: true
                 }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: 'rgba(0,0,0,0.1)'
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
-                    }
-                }
             }
         });
     }
-    
+
     // Performance Chart
     const performanceCtx = document.getElementById('performanceChart');
     if (performanceCtx) {
@@ -466,201 +296,72 @@ function initializeCharts() {
             type: 'doughnut',
             data: {
                 labels: ['On Time', 'Delayed', 'Cancelled'],
-                datasets: [{
-                    data: [94.2, 4.8, 1.0],
-                    backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
+                datasets: [{ data: [94.2, 4.8, 1.0], backgroundColor: ['#28a745', '#ffc107', '#dc3545'] }]
             }
         });
     }
-    
-    // Trends Chart (Reports page)
-    const trendsCtx = document.getElementById('trendsChart');
-    if (trendsCtx) {
-        new Chart(trendsCtx, {
-            type: 'line',
-            data: {
-                labels: ['Jan 1', 'Jan 2', 'Jan 3', 'Jan 4', 'Jan 5', 'Jan 6', 'Jan 7', 'Jan 8', 'Jan 9', 'Jan 10', 'Jan 11', 'Jan 12', 'Jan 13', 'Jan 14', 'Jan 15'],
-                datasets: [{
-                    label: 'On-Time Performance %',
-                    data: [92.5, 93.1, 94.2, 93.8, 94.5, 95.1, 94.8, 93.9, 94.2, 94.7, 95.0, 94.3, 94.6, 94.9, 94.2],
-                    borderColor: '#0066cc',
-                    backgroundColor: 'rgba(0, 102, 204, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }, {
-                    label: 'System Availability %',
-                    data: [98.2, 98.5, 98.7, 98.4, 98.8, 98.9, 98.6, 98.3, 98.7, 98.8, 98.9, 98.5, 98.7, 98.8, 98.7],
-                    borderColor: '#28a745',
-                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top'
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: false,
-                        min: 90,
-                        max: 100,
-                        grid: {
-                            color: 'rgba(0,0,0,0.1)'
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
-                    }
-                }
-            }
-        });
-    }
-    
-    // Route Performance Chart (Reports page)
-    const routeCtx = document.getElementById('routeChart');
-    if (routeCtx) {
-        new Chart(routeCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Aluva-Petta', 'Petta-Aluva', 'Aluva-Kakkanad', 'Kakkanad-Aluva'],
-                datasets: [{
-                    label: 'Efficiency %',
-                    data: [95.8, 94.9, 93.2, 94.5],
-                    backgroundColor: ['#0066cc', '#28a745', '#ffc107', '#17a2b8'],
-                    borderRadius: 5
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: false,
-                        min: 90,
-                        max: 100,
-                        grid: {
-                            color: 'rgba(0,0,0,0.1)'
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
-                    }
-                }
-            }
-        });
-    }
+
+    // Add other chart initializations (trends, route) here if needed
 }
 
-// Utility functions
 function animateNumber(element, targetValue) {
     const suffix = element.getAttribute('data-suffix') || '';
-    const parseNumeric = (v) => {
-        if (typeof v === 'number') return v;
-        const cleaned = String(v).replace(/[^0-9.\-]/g, '');
-        const n = Number(cleaned);
-        return isNaN(n) ? 0 : n;
-    };
-
-    const startValue = parseNumeric(element.textContent);
-    const endValue = parseNumeric(targetValue);
-    const hasDecimals = String(endValue).includes('.')
-    const duration = 1000;
+    const startValue = parseFloat(element.textContent.replace(/[^0-9.]/g, '')) || 0;
+    const duration = 1500;
     const startTime = performance.now();
-
-    function formatValue(v) {
-        const options = hasDecimals ? { maximumFractionDigits: 1, minimumFractionDigits: 1 } : {};
-        const formatted = hasDecimals ? Number(v).toFixed(1) : Math.round(v).toLocaleString();
-        return `${formatted}${suffix}`;
-    }
 
     function updateNumber(currentTime) {
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        const currentValue = startValue + (endValue - startValue) * progress;
-        element.textContent = formatValue(currentValue);
+        const currentValue = startValue + (targetValue - startValue) * progress;
+
+        if (targetValue % 1 !== 0 || suffix === '%') { // Handle decimals
+            element.textContent = currentValue.toFixed(1) + suffix;
+        } else {
+            element.textContent = Math.round(currentValue).toLocaleString();
+        }
 
         if (progress < 1) {
             requestAnimationFrame(updateNumber);
         } else {
-            element.textContent = formatValue(endValue);
+            // Ensure final value is accurate
+            if (targetValue % 1 !== 0 || suffix === '%') {
+                 element.textContent = targetValue.toFixed(1) + suffix;
+            } else {
+                 element.textContent = targetValue.toLocaleString();
+            }
         }
     }
-
     requestAnimationFrame(updateNumber);
 }
 
 function showNotification(message, type = 'info') {
-    // Create notification element
     const notification = document.createElement('div');
     notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-    notification.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999;';
+    notification.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
     document.body.appendChild(notification);
-    
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.parentNode.removeChild(notification);
-        }
-    }, 5000);
+    setTimeout(() => notification.remove(), 5000);
 }
 
-// Export functions for global access
+// Global access for onclick attributes
 window.showDashboard = showDashboard;
 window.showConstraints = showConstraints;
 window.showSchedules = showSchedules;
 window.showReports = showReports;
 window.logout = logout;
-window.resetConstraintsForm = resetConstraintsForm;
-window.editConstraint = editConstraint;
-window.deleteConstraint = deleteConstraint;
 
-// THEME: light/dark with persistence
+// THEME functions
 function initializeTheme() {
-    const saved = localStorage.getItem('kmrl_theme');
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const theme = saved || (prefersDark ? 'dark' : 'light');
-    applyTheme(theme);
+    const saved = localStorage.getItem('kmrl_theme') || 'light';
+    applyTheme(saved);
 }
-
 function toggleTheme() {
     const current = document.documentElement.getAttribute('data-theme') || 'light';
     const next = current === 'dark' ? 'light' : 'dark';
     applyTheme(next);
-    localStorage.setItem('kmrl_theme', next);
 }
-
 function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
-    const btn = document.getElementById('themeToggle');
-    if (btn) {
-        btn.innerHTML = theme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-        btn.classList.toggle('btn-outline-light', true);
-    }
+    localStorage.setItem('kmrl_theme', theme);
 }

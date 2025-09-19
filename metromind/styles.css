@@ -5,33 +5,11 @@
     --kmrl-dark-blue: #004499;
     --kmrl-gray: #6c757d;
     --kmrl-light-gray: #f8f9fa;
-    --surface: #ffffff;
-    --surface-2: rgba(255,255,255,0.6);
-    --text: #1f2937;
-    --text-muted: #6b7280;
-    --border: rgba(0,0,0,0.08);
-    --shadow: 0 10px 30px rgba(2, 6, 23, 0.08);
-}
-
-/* Dark theme variables */
-html[data-theme="dark"] {
-    --kmrl-blue: #4da3ff;
-    --kmrl-light-blue: rgba(77,163,255,0.15);
-    --kmrl-dark-blue: #1b4f8f;
-    --kmrl-gray: #9aa4b2;
-    --kmrl-light-gray: #0b1220;
-    --surface: #0f172a;
-    --surface-2: rgba(15,23,42,0.6);
-    --text: #e5e7eb;
-    --text-muted: #9ca3af;
-    --border: rgba(255,255,255,0.08);
-    --shadow: 0 12px 32px rgba(0,0,0,0.35);
 }
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--kmrl-light-gray);
-    color: var(--text);
 }
 
 html {
@@ -44,17 +22,14 @@ html {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--kmrl-blue) 0%, var(--kmrl-dark-blue) 100%);
+    background-image: url("https://images5.alphacoders.com/437/437778.jpg");
 }
 
 .login-card {
-    background: var(--surface);
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     padding: 2rem;
-    border-radius: 14px;
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     width: 100%;
     max-width: 400px;
 }
@@ -72,16 +47,14 @@ html {
     left: 0;
     z-index: 100;
     padding: 0;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    box-shadow: none;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
     overflow-y: auto;
 }
 
 .sidebar .nav-link {
-    color: var(--text-muted);
+    color: var(--kmrl-gray);
     padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid #e9ecef;
     transition: all 0.3s ease;
 }
 
@@ -109,10 +82,9 @@ main {
 
 /* Card Styles */
 .card {
-    border: 1px solid var(--border);
-    background: var(--surface);
-    border-radius: 14px;
-    box-shadow: var(--shadow);
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -123,8 +95,8 @@ main {
 
 .card-header {
     background-color: var(--kmrl-light-blue);
-    border-bottom: 1px solid var(--border);
-    border-radius: 14px 14px 0 0 !important;
+    border-bottom: 1px solid #e9ecef;
+    border-radius: 10px 10px 0 0 !important;
 }
 
 /* Stats Cards */
@@ -153,7 +125,7 @@ main {
 }
 
 .text-gray-800 {
-    color: var(--text) !important;
+    color: #5a5c69 !important;
 }
 
 .text-gray-300 {
@@ -161,19 +133,33 @@ main {
 }
 
 /* Navbar Styles */
+.navbar {
+    background-color: var(--kmrl-light-blue) !important;
+    border-bottom: 1px solid #e9ecef;
+}
+
 .navbar-brand {
+    color: var(--kmrl-blue) !important;
     font-weight: 600;
     font-size: 1.25rem;
 }
 
-.navbar.bg-primary {
-    background: linear-gradient(135deg, var(--kmrl-blue), var(--kmrl-dark-blue)) !important;
-    border-bottom: 1px solid var(--border);
-    box-shadow: var(--shadow);
-}
-
 .navbar-brand img {
     height: 25px;
+}
+
+.navbar-nav .nav-link,
+.navbar .nav-link {
+    color: var(--kmrl-blue) !important;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.navbar-nav .nav-link.active,
+.navbar .nav-link.active {
+    color: #fff !important;
+    background-color: var(--kmrl-blue) !important;
+    border-radius: 6px;
 }
 
 /* Tab Styles */
@@ -218,9 +204,14 @@ main {
 .table tbody td {
     padding: 1rem;
     vertical-align: middle;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid #e9ecef;
 }
 
+.col-md-9 {
+    flex: 0 0 auto;
+    width: 75%;
+    margin: auto;
+}
 /* Badge Styles */
 .badge {
     font-size: 0.75rem;
@@ -230,10 +221,9 @@ main {
 
 /* Form Styles */
 .form-control, .form-select {
-    border: 2px solid var(--border);
-    background: var(--surface);
-    color: var(--text);
-    border-radius: 10px;
+    background-color: #ffffff75;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
     padding: 0.75rem 1rem;
     transition: all 0.3s ease;
 }
@@ -245,16 +235,16 @@ main {
 
 .form-label {
     font-weight: 600;
-    color: var(--kmrl-gray);
+    color: #000;
     margin-bottom: 0.5rem;
 }
 
 /* Button Styles */
 .btn {
-    border-radius: 10px;
-    padding: 0.6rem 1.2rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
 }
 
 .btn-primary {
