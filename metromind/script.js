@@ -350,18 +350,3 @@ window.showConstraints = showConstraints;
 window.showSchedules = showSchedules;
 window.showReports = showReports;
 window.logout = logout;
-
-// THEME functions
-function initializeTheme() {
-    const saved = localStorage.getItem('kmrl_theme') || 'light';
-    applyTheme(saved);
-}
-function toggleTheme() {
-    const current = document.documentElement.getAttribute('data-theme') || 'light';
-    const next = current === 'dark' ? 'light' : 'dark';
-    applyTheme(next);
-}
-function applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('kmrl_theme', theme);
-}
