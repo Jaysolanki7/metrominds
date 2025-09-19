@@ -1,0 +1,9 @@
+pandas>=1.5
+scikit-learn>=1.2
+joblib
+python-dateutil
+numpy
+ortools; platform_system != 'Windows' or python_version >= '3.8'
+matplotlib
+plotly
+streamlit
