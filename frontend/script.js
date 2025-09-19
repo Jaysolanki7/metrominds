@@ -12,7 +12,7 @@ const lenis = new Lenis({
 
 // Global variables
 let currentUser = null;
-let constraints = [];
+let constraints = []; // Already declared
 let schedules = [];
 
 // Initialize the application
@@ -92,6 +92,7 @@ function showDashboard() {
     setActiveNav('navDashboard');
     showContent('dashboardContent');
     refreshDashboardData();
+    initializeDashboardCalendar(); // <-- Add this line
 }
 
 function showConstraints() {
@@ -99,7 +100,6 @@ function showConstraints() {
     showContent('constraintsContent');
 }
 
-// CORRECTED FUNCTION
 function showSchedules() {
     setActiveNav('navSchedules');
     showContent('schedulesContent');
@@ -149,6 +149,7 @@ function initializeDatePickers() {
 function handleConstraintsSubmit(e) {
     e.preventDefault();
     const formData = {
+        id: Date.now(), // Unique id
         trainId: document.getElementById('trainId').value,
         fitnessDate: document.getElementById('fitnessDate').value,
         jobCardStatus: document.getElementById('jobCardStatus').value,
@@ -157,56 +158,183 @@ function handleConstraintsSubmit(e) {
         cleaningSlot: document.getElementById('cleaningSlot').value,
         stablingPosition: document.getElementById('stablingPosition').value
     };
-    console.log("Constraint form submitted:", formData);
+    constraints.push(formData);
     showNotification('Constraints submitted successfully!', 'success');
     document.getElementById('constraintsForm').reset();
+    renderConstraintsList();
 }
+
+function renderConstraintsList() {
+    const container = document.getElementById('formRequestMsg');
+    if (!container) return;
+    if (constraints.length === 0) {
+        container.innerHTML = '';
+        container.style.display = 'none';
+        return;
+    }
+    container.style.display = 'block';
+    container.innerHTML = `
+        <h5 class="mt-3">Submitted Constraints</h5>
+        <table class="table table-bordered table-sm">
+            <thead>
+                <tr>
+                    <th>Train ID</th>
+                    <th>Fitness Date</th>
+                    <th>Job Card Status</th>
+                    <th>Branding Priority</th>
+                    <th>Mileage</th>
+                    <th>Cleaning Slot</th>
+                    <th>Stabling Position</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${constraints.map(item => `
+                    <tr>
+                        <td>${item.trainId}</td>
+                        <td>${item.fitnessDate}</td>
+                        <td>${item.jobCardStatus}</td>
+                        <td>${item.brandingPriority}</td>
+                        <td>${item.mileage}</td>
+                        <td>${item.cleaningSlot}</td>
+                        <td>${item.stablingPosition}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="editConstraint(${item.id})">Edit</button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteConstraint(${item.id})">Delete</button>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+window.editConstraint = function(id) {
+    const item = constraints.find(c => c.id === id);
+    if (!item) return;
+    document.getElementById('trainId').value = item.trainId;
+    document.getElementById('fitnessDate').value = item.fitnessDate;
+    document.getElementById('jobCardStatus').value = item.jobCardStatus;
+    document.getElementById('brandingPriority').value = item.brandingPriority;
+    document.getElementById('mileage').value = item.mileage;
+    document.getElementById('cleaningSlot').value = item.cleaningSlot;
+    document.getElementById('stablingPosition').value = item.stablingPosition;
+    // Remove old entry so submit will update
+    constraints = constraints.filter(c => c.id !== id);
+    renderConstraintsList();
+};
+
+window.deleteConstraint = function(id) {
+    constraints = constraints.filter(c => c.id !== id);
+    renderConstraintsList();
+};
 
 function handleScheduleRequest(e) {
     e.preventDefault();
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
+    const resultContainer = document.getElementById('scheduleApiResult');
 
     if (!startDate || !endDate) {
         showNotification("Please select both start and end dates.", "warning");
         return;
     }
 
-    // This is where you would make a real API call
-    console.log(`Fetching schedules from ${startDate} to ${endDate}`);
-    showNotification('Fetching schedules...', 'info');
+    // Show loader
+    resultContainer.innerHTML = `
+        <div class="d-flex justify-content-center align-items-center" style="height: 120px;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <span class="ms-3">Fetching schedules...</span>
+        </div>
+    `;
 
-    // MOCKUP: Displaying dummy data after a short delay
     setTimeout(() => {
-         const dummyData = [
-            { trainName: 'KM-004', trainPath: 'Aluva - Petta', time: '09:00' },
-            { trainName: 'KM-005', trainPath: 'Petta - Aluva', time: '09:15' }
+        // Calculate date difference
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const diffDays = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1);
+
+        // Train names and routes
+        const trainNames = Array.from({length: 24}, (_, i) => `KM-${(i+1).toString().padStart(3, '0')}`);
+        const trainRoutes = [
+            'Aluva - Petta',
+            'Petta - Aluva',
+            'Maharaja - Muttom',
+            'Muttom - Maharaja',
+            'Aluva - Maharaja',
+            'Petta - Muttom'
         ];
-        
+        const statuses = ['On Time', 'Delayed', 'Cancelled'];
+
+        let scheduleData = [];
+
+        for (let i = 0; i < diffDays; i++) {
+            const date = new Date(start);
+            date.setDate(start.getDate() + i);
+
+            for (let t = 0; t < 24; t++) {
+                const trainId = trainNames[t];
+                const route = trainRoutes[Math.floor(Math.random() * trainRoutes.length)];
+                // Departure between 6:00 and 20:00
+                const depHour = 6 + Math.floor(Math.random() * 14);
+                const depMinute = Math.floor(Math.random() * 60);
+                const departureTime = `${depHour.toString().padStart(2, '0')}:${depMinute.toString().padStart(2, '0')}`;
+                // Arrival 30-90 min after departure
+                const arrOffset = 30 + Math.floor(Math.random() * 61);
+                const arrDate = new Date(date);
+                arrDate.setHours(depHour, depMinute + arrOffset);
+                const arrivalTime = `${arrDate.getHours().toString().padStart(2, '0')}:${arrDate.getMinutes().toString().padStart(2, '0')}`;
+                const status = statuses[Math.floor(Math.random() * statuses.length)];
+                const passengers = 100 + Math.floor(Math.random() * 400); // 100-500
+
+                scheduleData.push({
+                    date: date.toISOString().slice(0, 10),
+                    trainId,
+                    route,
+                    departureTime,
+                    arrivalTime,
+                    status,
+                    passengers
+                });
+            }
+        }
+
+        // Show in table
         let html = `
             <div class="table-responsive mt-3">
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>Train Name</th>
-                            <th>Train Path</th>
-                            <th>Time</th>
+                            <th>Date</th>
+                            <th>Train ID</th>
+                            <th>Route</th>
+                            <th>Departure Time</th>
+                            <th>Arrival Time</th>
+                            <th>Status</th>
+                            <th>Passengers</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${dummyData.map(item => `
+                        ${scheduleData.map(item => `
                             <tr>
-                                <td>${item.trainName}</td>
-                                <td>${item.trainPath}</td>
-                                <td>${item.time}</td>
+                                <td>${item.date}</td>
+                                <td>${item.trainId}</td>
+                                <td>${item.route}</td>
+                                <td>${item.departureTime}</td>
+                                <td>${item.arrivalTime}</td>
+                                <td>${item.status}</td>
+                                <td>${item.passengers}</td>
                             </tr>
                         `).join('')}
                     </tbody>
                 </table>
             </div>
         `;
-        document.getElementById('scheduleApiResult').innerHTML = html;
-    }, 1000);
+        resultContainer.innerHTML = html;
+        showNotification('Schedules generated successfully!', 'success');
+    }, 2000); // 2 second delay
 }
 
 function refreshDashboardData() {
@@ -344,9 +472,82 @@ function showNotification(message, type = 'info') {
     setTimeout(() => notification.remove(), 5000);
 }
 
+function initializeDashboardCalendar() {
+    const calendarEl = document.getElementById('dashboardCalendar');
+    if (!calendarEl || typeof FullCalendar === 'undefined') return;
+
+    // Generate random train schedules and maintenance windows for calendar
+    const today = new Date();
+    let events = [];
+    const trainNames = Array.from({length: 24}, (_, i) => `KM-${(i+1).toString().padStart(3, '0')}`);
+    const trainRoutes = [
+        'Aluva - Petta',
+        'Petta - Aluva',
+        'Maharaja - Muttom',
+        'Muttom - Maharaja',
+        'Aluva - Maharaja',
+        'Petta - Muttom'
+    ];
+
+    // Add train schedules for next 7 days
+    for (let d = 0; d < 7; d++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + d);
+        const dateStr = date.toISOString().slice(0, 10);
+
+        // 5 random trains per day
+        for (let t = 0; t < 5; t++) {
+            const trainId = trainNames[Math.floor(Math.random() * trainNames.length)];
+            const route = trainRoutes[Math.floor(Math.random() * trainRoutes.length)];
+            const depHour = 6 + Math.floor(Math.random() * 14);
+            const depMinute = Math.floor(Math.random() * 60);
+            const arrOffset = 30 + Math.floor(Math.random() * 61);
+            const startTime = `${dateStr}T${depHour.toString().padStart(2, '0')}:${depMinute.toString().padStart(2, '0')}:00`;
+            const arrDate = new Date(date);
+            arrDate.setHours(depHour, depMinute + arrOffset);
+            const endTime = `${dateStr}T${arrDate.getHours().toString().padStart(2, '0')}:${arrDate.getMinutes().toString().padStart(2, '0')}:00`;
+
+            events.push({
+                title: `${trainId} (${route})`,
+                start: startTime,
+                end: endTime,
+                color: '#0066cc'
+            });
+        }
+
+        // 1 maintenance window per day
+        const maintHour = 12 + Math.floor(Math.random() * 6);
+        events.push({
+            title: `Maintenance Window`,
+            start: `${dateStr}T${maintHour}:00:00`,
+            end: `${dateStr}T${maintHour + 2}:00:00`,
+            color: '#dc3545'
+        });
+    }
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        height: 500,
+        events: events,
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        }
+    });
+    calendar.render();
+}
+
 // Global access for onclick attributes
 window.showDashboard = showDashboard;
 window.showConstraints = showConstraints;
 window.showSchedules = showSchedules;
 window.showReports = showReports;
 window.logout = logout;
+
+/*  Add in <head> section 
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css" rel="stylesheet">
+*/
+/*  Add before closing </body> tag 
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.js"></script>
+*/
