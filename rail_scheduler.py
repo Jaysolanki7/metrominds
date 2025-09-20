@@ -12,7 +12,7 @@ from ortools.sat.python import cp_model
 
 # CONFIGURATION
 CONFIG = {
-    "time_bucket": "H",                 # hourly buckets
+    "time_bucket": "h",                 # hourly buckets ('H' is deprecated)
     "n_days": 30,
     "routes": ["Route_A", "Route_B", "Route_C"],
     "start_date": "2025-01-01",
@@ -20,17 +20,22 @@ CONFIG = {
     "occupancy_target": 0.8,            # plan for 80% target occupancy
     "num_trains": 6,
     "num_drivers": 8,
-    "num_tracks": 3
+    "num_tracks": 3,
+    "features": [
+        "hour", "day_of_week", "is_weekend", "is_night", "event_size", "is_event_window",
+        "passenger_demand", "lag_1", "lag_24", "rolling_3", "rolling_6", "rolling_24",
+        "baseline_required_trains", "greedy_min_trains"
+    ]
 }
 np.random.seed(CONFIG["seed"])
 
 # ---------------------------
 # STEP 1: SYNTHETIC DATA GENERATION
 # ---------------------------
-def generate_synthetic_demand(n_days=30, time_freq="H", routes=None, start_date="2025-01-01"):
+def generate_synthetic_demand(n_days=30, time_freq="h", routes=None, start_date="2025-01-01"):
     if routes is None:
         routes = ["Route_A", "Route_B"]
-    slots = int(n_days * (24 if time_freq == "H" else 1))
+    slots = int(n_days * (24 if time_freq == "h" else 1))
     timestamps = pd.date_range(start=start_date, periods=slots, freq=time_freq)
     rows = []
     event_calendar = []
@@ -74,26 +79,12 @@ def generate_train_driver_track_metadata(num_trains=6, num_drivers=8, num_tracks
     })
     return trains, drivers, tracks
 
-demand_df, events_df = generate_synthetic_demand(
-    n_days=CONFIG["n_days"],
-    time_freq=CONFIG["time_bucket"],
-    routes=CONFIG["routes"],
-    start_date=CONFIG["start_date"]
-)
-trains_df, drivers_df, tracks_df = generate_train_driver_track_metadata(
-    num_trains=CONFIG["num_trains"],
-    num_drivers=CONFIG["num_drivers"],
-    num_tracks=CONFIG["num_tracks"]
-)
-
 def inject_missingness(df, frac_missing=0.02):
     df = df.copy()
     n = len(df)
     miss_idx = np.random.choice(n, size=int(n*frac_missing), replace=False)
     df.loc[miss_idx, "passenger_demand"] = np.nan
     return df
-
-demand_df = inject_missingness(demand_df, frac_missing=0.02)
 
 # STEP 2: DATA PREPROCESSING
 def preprocess_demand(demand_df, events_df=None, occupancy_target=0.8, trains_df=None):
@@ -144,8 +135,13 @@ def preprocess_demand(demand_df, events_df=None, occupancy_target=0.8, trains_df
     df["rolling_24"] = grp["passenger_demand"].rolling(window=24, min_periods=1).mean().reset_index(level=0,drop=True)
     df["lag_1"] = df["lag_1"].fillna(route_medians)
     df["lag_24"] = df["lag_24"].fillna(route_medians)
+
+    # Target for prediction: next hour's demand
+    df["target_next_hour"] = df.groupby("route")["passenger_demand"].shift(-1)
+
     # One-hot encode route
     df = pd.get_dummies(df, columns=["route"], prefix="route")
+
     # Baseline required trains
     if trains_df is not None and not trains_df.empty:
         avg_capacity = trains_df["capacity"].mean()
@@ -164,8 +160,6 @@ def preprocess_demand(demand_df, events_df=None, occupancy_target=0.8, trains_df
                 return req
         return len(sorted_caps)
     df["greedy_min_trains"] = df["passenger_demand"].apply(lambda x: greedy_trains_needed(x))
-    # Target for prediction: next hour's demand
-    df["target_next_hour"] = df.groupby("route")["passenger_demand"].shift(-1)
     # Final columns
     feature_cols = [
         "timestamp", "date", "hour", "day_of_week", "is_weekend", "is_night", "event_size", "is_event_window",
@@ -176,8 +170,6 @@ def preprocess_demand(demand_df, events_df=None, occupancy_target=0.8, trains_df
     final_cols = feature_cols + route_cols
     final_df = df[final_cols].reset_index(drop=True)
     return final_df
-
-processed_df = preprocess_demand(demand_df, events_df=events_df, occupancy_target=CONFIG["occupancy_target"], trains_df=trains_df)
 
 # ---------------------------
 # STEP 3: TRAIN/TEST SPLIT
@@ -191,87 +183,124 @@ def train_test_split_by_date(df, test_days=7):
     test = df[df["timestamp"] > cutoff].reset_index(drop=True)
     return train, test
 
-train_df, test_df = train_test_split_by_date(processed_df, test_days=7)
-
 # ---------------------------
 # STEP 4: PREDICTION MODEL
 # ---------------------------
-# Drop rows with missing target
-train_df = train_df.dropna(subset=["target_next_hour"])
-test_df = test_df.dropna(subset=["target_next_hour"])
-
-feature_cols = [c for c in train_df.columns if c not in ["timestamp", "date", "target_next_hour"]]
-X_train = train_df[feature_cols]
-y_train = train_df["target_next_hour"]
-X_test = test_df[feature_cols]
-y_test = test_df["target_next_hour"]
-
-model = XGBRegressor(
-    n_estimators=200,
-    learning_rate=0.1,
-    max_depth=6,
-    random_state=CONFIG["seed"]
-)
-model.fit(X_train, y_train)
-y_pred = model.predict(X_test)
-
-print("RMSE:", np.sqrt(mean_squared_error(y_test, y_pred)))
-print("R²:", r2_score(y_test, y_pred))
-
-joblib.dump(model, "passenger_forecast_model.pkl")
+def train_and_save_model(train_df, model_path="passenger_forecast_model.pkl"):
+    train_df = train_df.dropna(subset=["target_next_hour"])
+    feature_cols = [c for c in train_df.columns if c not in ["timestamp", "date", "target_next_hour"]]
+    X_train = train_df[feature_cols]
+    y_train = train_df["target_next_hour"]
+    
+    model = XGBRegressor(
+        n_estimators=200,
+        learning_rate=0.1,
+        max_depth=6,
+        random_state=CONFIG["seed"]
+    )
+    model.fit(X_train, y_train)
+    joblib.dump(model, model_path)
+    print(f"Model saved to {model_path}")
+    return model
 
 # ---------------------------
 # STEP 5: OPTIMIZATION
 # ---------------------------
-# Example: optimize train allocation for next 24 hours
-predicted_demand = np.ceil(y_pred[:24])
-train_capacity = int(trains_df["capacity"].mean())
-num_trains = CONFIG["num_trains"]
+def get_schedule_recommendations(constraints_df, start_date, end_date):
+    # This is a placeholder. The actual implementation should use the trained model
+    # and optimization logic. For now, it returns a dummy schedule.
+    print("Generating dummy schedule recommendations...")
+    
+    # Create a date range for the schedule
+    dates = pd.date_range(start=start_date, end=end_date, freq='D')
+    
+    # Dummy data
+    train_names = [f"Train {i}" for i in range(1, 4)]
+    paths = ["Path A -> B", "Path B -> C", "Path C -> A"]
+    times = ["08:00", "12:00", "16:00"]
+    
+    schedule_data = []
+    for date in dates:
+        for i in range(3):
+            schedule_data.append({
+                "date": date.strftime('%Y-%m-%d'),
+                "trainName": np.random.choice(train_names),
+                "trainPath": np.random.choice(paths),
+                "time": np.random.choice(times)
+            })
+            
+    return pd.DataFrame(schedule_data)
 
-model_opt = cp_model.CpModel()
-trains_per_hour = [model_opt.NewIntVar(0, num_trains, f"trains_h{h}") for h in range(24)]
-
-for h in range(24):
-    required_trains = int(np.ceil(predicted_demand[h] / train_capacity))
-    model_opt.Add(trains_per_hour[h] >= required_trains)
-
-model_opt.Add(sum(trains_per_hour) <= num_trains * 24)
-unused_trains = num_trains * 24 - sum(trains_per_hour)
-model_opt.Minimize(unused_trains)
-
-solver = cp_model.CpSolver()
-status = solver.Solve(model_opt)
-
-if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
-    print("Optimal Schedule (trains per hour):")
-    schedule = [solver.Value(trains_per_hour[h]) for h in range(24)]
-    print(schedule)
-else:
-    print("No feasible solution found.")
 
 # ---------------------------
 # STEP 6: PIPELINE FUNCTION
 # ---------------------------
-def run_pipeline(new_data, model_path="passenger_forecast_model.pkl", train_capacity=train_capacity, num_trains=num_trains):
+def run_pipeline(new_data, model_path="passenger_forecast_model.pkl", train_capacity=250, num_trains=6):
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(f"Model file not found at {model_path}. Please train the model first.")
+    
     model = joblib.load(model_path)
     forecast = model.predict(new_data)
+    
     model_opt = cp_model.CpModel()
     trains_per_hour = [model_opt.NewIntVar(0, num_trains, f"trains_h{h}") for h in range(len(forecast))]
+    
     for h in range(len(forecast)):
         required_trains = int(np.ceil(forecast[h] / train_capacity))
         model_opt.Add(trains_per_hour[h] >= required_trains)
+        
     model_opt.Add(sum(trains_per_hour) <= num_trains * len(forecast))
     model_opt.Minimize(num_trains * len(forecast) - sum(trains_per_hour))
+    
     solver = cp_model.CpSolver()
     status = solver.Solve(model_opt)
+    
     if status in [cp_model.OPTIMAL, cp_model.FEASIBLE]:
         schedule = [solver.Value(trains_per_hour[h]) for h in range(len(forecast))]
         return forecast, schedule
     else:
         return forecast, None
 
-# Example run on test set (next 24 hours)
-forecast, schedule = run_pipeline(X_test.iloc[:24])
+# Main execution block to run only when the script is executed directly
+if __name__ == "__main__":
+    print("--- Running rail_scheduler.py as a standalone script ---")
+    
+    # 1. Generate Data
+    demand_df, events_df = generate_synthetic_demand(
+        n_days=CONFIG["n_days"],
+        time_freq=CONFIG["time_bucket"],
+        routes=CONFIG["routes"],
+        start_date=CONFIG["start_date"]
+    )
+    trains_df, _, _ = generate_train_driver_track_metadata(
+        num_trains=CONFIG["num_trains"]
+    )
+    demand_df = inject_missingness(demand_df)
+    print("Step 1: Synthetic data generated.")
 
-print("\nForecasted Demand:", forecast)
-print("Optimized Train Schedule:", schedule)
+    # 2. Preprocess Data
+    processed_df = preprocess_demand(demand_df, events_df=events_df, occupancy_target=CONFIG["occupancy_target"], trains_df=trains_df)
+    print("Step 2: Data preprocessed.")
+
+    # 3. Split Data
+    train_df, test_df = train_test_split_by_date(processed_df, test_days=7)
+    print("Step 3: Data split into train/test sets.")
+
+    # 4. Train and Save Model
+    model = train_and_save_model(train_df)
+    
+    # Evaluate model
+    test_df = test_df.dropna(subset=["target_next_hour"])
+    feature_cols = [c for c in test_df.columns if c not in ["timestamp", "date", "target_next_hour"]]
+    X_test = test_df[feature_cols]
+    y_test = test_df["target_next_hour"]
+    y_pred = model.predict(X_test)
+    print("\nModel Evaluation on Test Set:")
+    print("RMSE:", np.sqrt(mean_squared_error(y_test, y_pred)))
+    print("R²:", r2_score(y_test, y_pred))
+
+    # 5. Run Pipeline Example
+    print("\nStep 5: Running optimization pipeline on a sample of test data...")
+    forecast, schedule = run_pipeline(X_test.iloc[:24], train_capacity=trains_df["capacity"].mean())
+    print("\nForecasted Demand (first 24 hours):", forecast)
+    print("Optimized Train Schedule (first 24 hours):", schedule)

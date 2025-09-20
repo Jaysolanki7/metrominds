@@ -7,3 +7,5 @@ ortools; platform_system != 'Windows' or python_version >= '3.8'
 matplotlib
 plotly
 streamlit
+Flask-Cors
+xgboost

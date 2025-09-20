@@ -1,0 +1,8 @@
+Model path: models/passenger_forecast.pkl
+Feature importances: models/feature_importances.json
+Metrics snapshot example: test_output/metrics.json
+
+Notes:
+- The model is a scikit-learn RandomForestRegressor trained in `src/prediction.py`.
+- To load: `import joblib; model = joblib.load('models/passenger_forecast.pkl')`
+- Use `src/data_ingestion.feature_engineering` or reproduce the same feature steps for inputs.

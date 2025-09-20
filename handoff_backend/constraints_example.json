@@ -1,0 +1,6 @@
+{
+  "capacity_per_train": 100,
+  "max_driver_hours": 8,
+  "drivers_csv": "path/to/drivers.csv",
+  "tracks_csv": "path/to/tracks.csv"
+}

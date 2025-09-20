@@ -1,0 +1,14 @@
+{
+  "endpoints": {
+    "/predict": {
+      "method": "POST",
+      "body": {"horizon": 24, "last_rows": []},
+      "response": {"predictions": [], "metrics": {"r2": 0.33, "rmse": 50}, "model_version": "2025-09-18T12:00"}
+    },
+    "/schedule": {
+      "method": "POST",
+      "body": {"predictions": [], "optimizer": "ga", "constraints": {}},
+      "response": {"schedule": {"0": 2, "1": 2}, "assignments_url": "/downloads/assignments.csv"}
+    }
+  }
+}

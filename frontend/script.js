@@ -1,4 +1,3 @@
-
 const lenis = new Lenis({
     autoRaf: true,
   });
@@ -14,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeApp() {
+    
     initializeDatePickers();
     initializeCharts();
     setupEventListeners();
@@ -149,6 +149,40 @@ function handleConstraintsSubmit(e) {
     document.getElementById('constraintsForm').reset();
     renderConstraintsList();
 }
+
+// Constraints Form Submission
+document.getElementById('constraintsForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        trainId: document.getElementById('trainId').value,
+        fitnessDate: document.getElementById('fitnessDate').value,
+        jobCardStatus: document.getElementById('jobCardStatus').value,
+        brandingPriority: document.getElementById('brandingPriority').value,
+        mileage: document.getElementById('mileage').value,
+        cleaningSlot: document.getElementById('cleaningSlot').value,
+        stablingPosition: document.getElementById('stablingPosition').value
+    };
+
+    // Backend ko data bhejein
+    fetch('http://127.0.0.1:5000/api/constraints', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Success:', data);
+        alert('Constraint saved successfully!');
+        document.getElementById('constraintsForm').reset(); // Form reset karein
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+        alert('Error saving constraint.');
+    });
+});
 
 function renderConstraintsList() {
     const container = document.getElementById('formRequestMsg');
